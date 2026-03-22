@@ -17,8 +17,8 @@ public class ExpenseRequestDTO {
 
     private LocalDate date;
 
-    @NotNull(message = "User is required")
-    private Long userId;
+//    @NotNull(message = "User is required")
+//    private Long userId;
 
     @NotNull(message = "Category is required")
     private Long categoryId;
@@ -50,13 +50,13 @@ public class ExpenseRequestDTO {
         this.date = date;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+//    public Long getUserId() {
+//        return userId;
+//    }
+//
+//    public void setUserId(Long userId) {
+//        this.userId = userId;
+//    }
 
     public Long getCategoryId() {
         return categoryId;

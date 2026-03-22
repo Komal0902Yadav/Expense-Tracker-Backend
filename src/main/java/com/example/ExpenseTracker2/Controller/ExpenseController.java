@@ -1,11 +1,18 @@
 package com.example.ExpenseTracker2.Controller;
 
 import com.example.ExpenseTracker2.Entity.Expense;
+import com.example.ExpenseTracker2.Entity.User;
+import com.example.ExpenseTracker2.Repository.UserRepository;
 import com.example.ExpenseTracker2.Service.ExpenseService;
-import com.example.ExpenseTracker2.dto.ExpenseRequestDTO;
-import com.example.ExpenseTracker2.dto.ExpenseResponseDTO;
+import com.example.ExpenseTracker2.dto.*;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,18 +29,33 @@ public class ExpenseController {
     }
 
     @PostMapping
-    private ExpenseResponseDTO createExpense(@Valid @RequestBody ExpenseRequestDTO requestDTO){
-        return expenseService.createExpense(requestDTO);
+    public ResponseEntity<ExpenseResponseDTO> createExpense(
+            @Valid @RequestBody ExpenseRequestDTO requestDTO,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+
+        ExpenseResponseDTO response = expenseService.createExpense(requestDTO, username);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public List<ExpenseResponseDTO> getAllExpense(){
-        return expenseService.getAllExpenses();
+    public PagedResponseDTO<ExpenseResponseDTO> getAllExpenses(Pageable pageable){
+
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        String username = authentication.getName();
+
+        return expenseService.getAllExpenses(pageable, username);
     }
 
     @GetMapping("/{id}")
-    public ExpenseResponseDTO getExpenseById(@PathVariable Long id){
-        return expenseService.getExpenseById(id);
+    public ExpenseResponseDTO getExpenseById(@PathVariable Long id, Authentication authentication){
+        String username = authentication.getName();
+        return expenseService.getExpenseById(id, username);
     }
 
     @PutMapping("/{id}")
@@ -46,15 +68,34 @@ public class ExpenseController {
          expenseService.deleteExpense(id);
     }
 
+    @GetMapping("/analytics/category")
+    public List<CategoryExpenseSummaryDTO> getCategoryAnalytics(Authentication auth){
+        return expenseService.getCategoryAnalytics(auth.getName());
+    }
+
+    @GetMapping("/analytics/monthly")
+    public List<MontlyExpenseSummaryDTO> getMonthlyAnalytics(Authentication auth){
+        return expenseService.getMontlyAnalytics(auth.getName());
+    }
+
+    @GetMapping("/analytics/total")
+    public Double getTotalExpense(Authentication auth){
+        return expenseService.getTotalExpense(auth.getName());
+    }
+
     @GetMapping("/filter")
     public List<ExpenseResponseDTO> filterExpenses(
-            @RequestParam(required = false) Long userId,
+//            @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            Authentication authentication
             ){
-        return expenseService.filterExpenses(userId, categoryId, startDate, endDate);
+        String username = authentication.getName();
+        return expenseService.filterExpenses(Long.valueOf(username), categoryId, startDate, endDate);
     }
+
+
 }
