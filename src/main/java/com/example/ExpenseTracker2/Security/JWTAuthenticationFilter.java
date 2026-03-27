@@ -30,6 +30,17 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
         throws ServletException, IOException{
 
+        String path = request.getRequestURI();
+        if (path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-resources") ||
+                path.startsWith("/auth")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         System.out.println("JWT Filter Executed");
 
         final String authHeader = request.getHeader("Authorization");
