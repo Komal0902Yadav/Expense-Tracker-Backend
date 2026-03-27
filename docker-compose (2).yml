@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: expense-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Yash@2012
+      MYSQL_DATABASE: expense_tracker
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: expense-app
+    depends_on:
+      - mysql
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/expense_tracker
+      DB_USERNAME: root
+      DB_PASSWORD: Yash@2012
+
+volumes:
+  mysql-data:
